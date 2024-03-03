@@ -14,7 +14,6 @@ from params import *
 # this will be called when the event READY is triggered, which will be on bot start
 async def on_ready(ready_event: EventData):
     print("Bot is ready for work, joining channels")
-    print(type(TARGET_CHANNEL))
     # join our target channel, if you want to join multiple, either call join for each individually
     # or even better pass a list of channels as the argument
     await ready_event.chat.join_room(TARGET_CHANNEL)
@@ -53,7 +52,6 @@ async def fake_audio(cmd: ChatCommand):
     global COMAND_TIMER
     if COMAND_TIMER + relativedelta.relativedelta(seconds=COMAND_COOLDOWN) < datetime.now():
         text = cmd.parameter
-        print(text)
         gTTS(text, lang=FAKE_LANGUAGE).save(FAKE_AUDIO)
         playsound(FAKE_AUDIO)
         os.remove(FAKE_AUDIO)
