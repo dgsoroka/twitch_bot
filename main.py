@@ -9,6 +9,7 @@ from datetime import datetime
 from dateutil import relativedelta
 from gtts import gTTS
 from params import *
+import random
 
 
 # this will be called when the event READY is triggered, which will be on bot start
@@ -56,6 +57,18 @@ async def fake_audio(cmd: ChatCommand):
         playsound(FAKE_AUDIO)
         os.remove(FAKE_AUDIO)
         COMAND_TIMER = datetime.now()
+        
+async def throw(cmd: ChatCommand):
+    global chat
+    chatters = await chat.twitch.get_chatters(STREAMER_ID, MODERATOR_ID)
+    chatters = [i.user_login for i in chatters.data]
+    if cmd.parameter in chatters:
+        if random.randint(1, 10) >= 5:
+            await cmd.send(f"@{cmd.user.name} швырнул на прогиб @{cmd.parameter}")
+        else:
+            await cmd.send(f"@{cmd.user.name} не смог поднять тушу @{cmd.parameter} и сломал себе спину")
+    else:
+        print("Юзера нет в чате")
 
 
 # this is where we set up the bot
@@ -67,8 +80,8 @@ async def run():
     await twitch.set_user_authentication(token, USER_SCOPE, refresh_token)
 
     # create chat instance
+    global chat
     chat = await Chat(twitch)
-
     # register the handlers for the events you want
 
     # listen to when the bot is done starting up and ready to join channels
@@ -83,9 +96,12 @@ async def run():
     chat.register_command("reply", test_command)
     chat.register_command("audio", test_audio_command)
     chat.register_command("fake", fake_audio)
+    chat.register_command("прогиб", throw)
 
     # we are done with our setup, lets start this bot up!
     chat.start()
+    chatters = await chat.twitch.get_chatters(STREAMER_ID, MODERATOR_ID)
+    print([i.user_login for i in chatters.data])
 
     # lets run till we press enter in the console
     try:
