@@ -1,22 +1,14 @@
 from twitchAPI.twitch import Twitch
 from twitchAPI.oauth import UserAuthenticator
-from twitchAPI.type import AuthScope, ChatEvent
+from twitchAPI.type import ChatEvent
 from twitchAPI.chat import Chat, EventData, ChatMessage, ChatSub, ChatCommand
 import asyncio
 import os
-from dotenv import load_dotenv
 from playsound import playsound
 from datetime import datetime
 from dateutil import relativedelta
-
-load_dotenv()
-
-COMAND_TIMER = datetime.now()
-TARGET_CHANNEL = os.getenv("TARGET_CHANNEL").split(',')
-APP_ID = os.getenv("APP_ID")
-USER_SCOPE = [AuthScope.CHAT_READ, AuthScope.CHAT_EDIT]
-APP_SECRET = os.getenv("APP_SECRET")
-AUDIO_1 = os.getenv("AUDIO_1")
+from gtts import gTTS
+from params import *
 
 
 # this will be called when the event READY is triggered, which will be on bot start
@@ -56,6 +48,16 @@ async def test_audio_command(cmd: ChatCommand):
     if COMAND_TIMER + relativedelta.relativedelta(seconds=60) < datetime.now():
         playsound(AUDIO_1)
         COMAND_TIMER = datetime.now()
+        
+async def fake_audio(cmd: ChatCommand):
+    global COMAND_TIMER
+    if COMAND_TIMER + relativedelta.relativedelta(seconds=COMAND_COOLDOWN) < datetime.now():
+        text = cmd.parameter
+        print(text)
+        gTTS(text, lang=FAKE_LANGUAGE).save(FAKE_AUDIO)
+        playsound(FAKE_AUDIO)
+        os.remove(FAKE_AUDIO)
+        COMAND_TIMER = datetime.now()
 
 
 # this is where we set up the bot
@@ -82,6 +84,7 @@ async def run():
     # you can directly register commands and their handlers, this will register the !reply command
     chat.register_command("reply", test_command)
     chat.register_command("audio", test_audio_command)
+    chat.register_command("fake", fake_audio)
 
     # we are done with our setup, lets start this bot up!
     chat.start()
