@@ -44,7 +44,7 @@ async def test_command(cmd: ChatCommand):
         
 async def test_audio_command(cmd: ChatCommand):
     global COMAND_TIMER
-    if COMAND_TIMER + relativedelta.relativedelta(seconds=60) < datetime.now():
+    if COMAND_TIMER + relativedelta.relativedelta(seconds=COMAND_COOLDOWN) < datetime.now():
         playsound(AUDIO_1)
         COMAND_TIMER = datetime.now()
         
