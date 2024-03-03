@@ -42,33 +42,54 @@ async def test_command(cmd: ChatCommand):
         await cmd.reply("you did not tell me what to reply with")
     else:
         await cmd.reply(f"{cmd.user.name}: {cmd.parameter}")
-        
+
+
 async def test_audio_command(cmd: ChatCommand):
     global COMAND_TIMER
-    if COMAND_TIMER + relativedelta.relativedelta(seconds=COMAND_COOLDOWN) < datetime.now():
+    if (
+        COMAND_TIMER + relativedelta.relativedelta(seconds=COMAND_COOLDOWN)
+        < datetime.now()
+    ):
         playsound(AUDIO_1)
         COMAND_TIMER = datetime.now()
-        
+
+
 async def fake_audio(cmd: ChatCommand):
     global COMAND_TIMER
-    if COMAND_TIMER + relativedelta.relativedelta(seconds=COMAND_COOLDOWN) < datetime.now():
+    if (
+        COMAND_TIMER + relativedelta.relativedelta(seconds=COMAND_COOLDOWN)
+        < datetime.now()
+    ):
         text = cmd.parameter
         gTTS(text, lang=FAKE_LANGUAGE).save(FAKE_AUDIO)
         playsound(FAKE_AUDIO)
         os.remove(FAKE_AUDIO)
         COMAND_TIMER = datetime.now()
-        
+
+
 async def throw(cmd: ChatCommand):
     global chat
+    chatter = None
     chatters = await chat.twitch.get_chatters(STREAMER_ID, MODERATOR_ID)
-    chatters = [i.user_login for i in chatters.data]
-    if cmd.parameter in chatters:
-        if random.randint(1, 10) >= 5:
-            await cmd.send(f"@{cmd.user.name} швырнул на прогиб @{cmd.parameter}")
-        else:
-            await cmd.send(f"@{cmd.user.name} не смог поднять тушу @{cmd.parameter} и сломал себе спину")
-    else:
+    chatters = [i for i in chatters.data]
+    for i in chatters:
+        if i.user_login == cmd.parameter[1:]:
+            chatter = i
+    if not chatter:
         print("Юзера нет в чате")
+        return
+    if random.randint(1, 10) >= 5:
+        await cmd.reply(f"@{cmd.user.name} швырнул на прогиб @{chatter.user_login}")
+        await chat.twitch.ban_user(
+            STREAMER_ID, MODERATOR_ID, chatter.user_id, "Кинут на прогиб", 30
+        )
+    else:
+        await cmd.reply(
+            f"@{cmd.user.name} не смог поднять тушу @{chatter.user_login} и сломал себе спину"
+        )
+        await chat.twitch.ban_user(
+            STREAMER_ID, MODERATOR_ID, cmd.user.id, "Сломал спину", 30
+        )
 
 
 # this is where we set up the bot
