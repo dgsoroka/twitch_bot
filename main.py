@@ -5,18 +5,24 @@ from twitchAPI.chat import Chat, EventData, ChatMessage, ChatSub, ChatCommand
 import asyncio
 import os
 from dotenv import load_dotenv
+from playsound import playsound
+from datetime import datetime
+from dateutil import relativedelta
 
 load_dotenv()
 
-TARGET_CHANNEL = os.getenv("TARGET_CHANNEL")
+COMAND_TIMER = datetime.now()
+TARGET_CHANNEL = os.getenv("TARGET_CHANNEL").split(',')
 APP_ID = os.getenv("APP_ID")
 USER_SCOPE = [AuthScope.CHAT_READ, AuthScope.CHAT_EDIT]
 APP_SECRET = os.getenv("APP_SECRET")
+AUDIO_1 = os.getenv("AUDIO_1")
 
 
 # this will be called when the event READY is triggered, which will be on bot start
 async def on_ready(ready_event: EventData):
     print("Bot is ready for work, joining channels")
+    print(type(TARGET_CHANNEL))
     # join our target channel, if you want to join multiple, either call join for each individually
     # or even better pass a list of channels as the argument
     await ready_event.chat.join_room(TARGET_CHANNEL)
@@ -44,6 +50,12 @@ async def test_command(cmd: ChatCommand):
         await cmd.reply("you did not tell me what to reply with")
     else:
         await cmd.reply(f"{cmd.user.name}: {cmd.parameter}")
+        
+async def test_audio_command(cmd: ChatCommand):
+    global COMAND_TIMER
+    if COMAND_TIMER + relativedelta.relativedelta(seconds=60) < datetime.now():
+        playsound(AUDIO_1)
+        COMAND_TIMER = datetime.now()
 
 
 # this is where we set up the bot
@@ -69,6 +81,7 @@ async def run():
 
     # you can directly register commands and their handlers, this will register the !reply command
     chat.register_command("reply", test_command)
+    chat.register_command("audio", test_audio_command)
 
     # we are done with our setup, lets start this bot up!
     chat.start()
