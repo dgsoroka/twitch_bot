@@ -95,6 +95,7 @@ async def throw(cmd: ChatCommand):
         await chat.twitch.ban_user(
             STREAMER_ID, MODERATOR_ID, cmd.user.id, "Сломал спину", 30
         )
+    COMAND_TIMER = datetime.now()
 
 
 async def poke(cmd: ChatCommand):
@@ -108,6 +109,7 @@ async def poke(cmd: ChatCommand):
     chatters = [i.user_login for i in chatters.data]
     random_chatters = random.choice(chatters)
     await cmd.send(f"Пошел нахуй, @{random_chatters}")
+    COMAND_TIMER = datetime.now()
 
 
 # this is where we set up the bot
