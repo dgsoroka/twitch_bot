@@ -12,7 +12,7 @@ from params import *
 import random
 
 
-def cooldown():
+async def cooldown():
     if not (
         COMMAND_TIMER + relativedelta.relativedelta(seconds=COMMAND_COOLDOWN)
         < datetime.now()
@@ -21,7 +21,7 @@ def cooldown():
 
 async def commands(cmd: ChatCommand):
     global COMMAND_TIMER
-    if cooldown():
+    if await cooldown():
         return
     if LIST_COMMANDS:
         message = 'На канале есть чат-бот, команды:\n'
@@ -115,7 +115,7 @@ async def throw(cmd: ChatCommand):
 
 async def poke(cmd: ChatCommand):
     global chat, COMMAND_TIMER
-    if cooldown():
+    if await cooldown():
         return
     chatters = await chat.twitch.get_chatters(STREAMER_ID, MODERATOR_ID)
     chatters = [i.user_login for i in chatters.data]
