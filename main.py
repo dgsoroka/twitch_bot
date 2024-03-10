@@ -58,7 +58,7 @@ async def test_command(cmd: ChatCommand):
 
 async def test_audio_command(cmd: ChatCommand):
     global COMMAND_TIMER
-    if cooldown():
+    if await cooldown():
         return
     playsound(AUDIO_1)
     COMMAND_TIMER = datetime.now()
@@ -66,7 +66,7 @@ async def test_audio_command(cmd: ChatCommand):
 
 async def fake_audio(cmd: ChatCommand):
     global COMMAND_TIMER
-    if cooldown():
+    if await cooldown():
         return
     text = cmd.parameter
     gTTS(text, lang=FAKE_LANGUAGE).save(FAKE_AUDIO)
@@ -77,7 +77,7 @@ async def fake_audio(cmd: ChatCommand):
 
 async def throw(cmd: ChatCommand):
     global chat, mods, COMMAND_TIMER
-    if cooldown():
+    if await cooldown():
         return
     chatter = None
     chatters = await chat.twitch.get_chatters(STREAMER_ID, MODERATOR_ID)
@@ -105,7 +105,7 @@ async def throw(cmd: ChatCommand):
 
 async def poke(cmd: ChatCommand):
     global chat, COMMAND_TIMER
-    if cooldown():
+    if await cooldown():
         return
     chatters = await chat.twitch.get_chatters(STREAMER_ID, MODERATOR_ID)
     chatters = [i.user_login for i in chatters.data]
