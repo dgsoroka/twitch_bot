@@ -5,8 +5,8 @@ from twitchAPI.type import AuthScope
 
 load_dotenv()
 
-COMAND_TIMER = datetime(1990, 1, 1)
-TARGET_CHANNEL = os.getenv("TARGET_CHANNEL").split(",")
+COMMAND_TIMER = datetime(1990, 1, 1)
+TARGET_CHANNEL = [i.lstrip().rstrip() for i in os.getenv("TARGET_CHANNEL").split(",")]
 APP_ID = os.getenv("APP_ID")
 USER_SCOPE = [
     AuthScope.CHAT_READ,
@@ -24,6 +24,7 @@ APP_SECRET = os.getenv("APP_SECRET")
 AUDIO_1 = os.getenv("AUDIO_1")
 FAKE_AUDIO = os.getenv("FAKE_AUDIO")
 FAKE_LANGUAGE = "ru"
-COMAND_COOLDOWN = 10
+COMMAND_COOLDOWN = 10
 STREAMER_ID = os.getenv("STREAMER_ID")
 MODERATOR_ID = os.getenv("MODERATOR_ID")
+LIST_COMMANDS = [i.lstrip().rstrip() for i in os.getenv("LIST_COMMANDS").split(",")]
