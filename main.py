@@ -107,7 +107,7 @@ async def poke(cmd: ChatCommand):
     chatters = await chat.twitch.get_chatters(STREAMER_ID, MODERATOR_ID)
     chatters = [i.user_login for i in chatters.data]
     random_chatters = random.choice(chatters)
-    cmd.send(f"Пошел нахуй, @{random_chatters}")
+    await cmd.send(f"Пошел нахуй, @{random_chatters}")
 
 
 # this is where we set up the bot
