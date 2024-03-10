@@ -10,8 +10,20 @@ from dateutil import relativedelta
 from gtts import gTTS
 from params import *
 import random
+from utils import cooldown
 
 
+async def commands(cmd: ChatCommand):
+    global COMMAND_TIMER
+    if cooldown():
+        return
+    if LIST_COMMANDS:
+        message = 'На канале есть чат-бот, команды:\n'
+        for command in LIST_COMMANDS:
+            message += command
+            message += '\n'
+        cmd.reply(message)
+    
 # this will be called when the event READY is triggered, which will be on bot start
 async def on_ready(ready_event: EventData):
     print("Bot is ready for work, joining channels")
@@ -45,34 +57,27 @@ async def test_command(cmd: ChatCommand):
 
 
 async def test_audio_command(cmd: ChatCommand):
-    global COMAND_TIMER
-    if (
-        COMAND_TIMER + relativedelta.relativedelta(seconds=COMAND_COOLDOWN)
-        < datetime.now()
-    ):
-        playsound(AUDIO_1)
-        COMAND_TIMER = datetime.now()
+    global COMMAND_TIMER
+    if cooldown():
+        return
+    playsound(AUDIO_1)
+    COMMAND_TIMER = datetime.now()
 
 
 async def fake_audio(cmd: ChatCommand):
-    global COMAND_TIMER
-    if (
-        COMAND_TIMER + relativedelta.relativedelta(seconds=COMAND_COOLDOWN)
-        < datetime.now()
-    ):
-        text = cmd.parameter
-        gTTS(text, lang=FAKE_LANGUAGE).save(FAKE_AUDIO)
-        playsound(FAKE_AUDIO)
-        os.remove(FAKE_AUDIO)
-        COMAND_TIMER = datetime.now()
+    global COMMAND_TIMER
+    if cooldown():
+        return
+    text = cmd.parameter
+    gTTS(text, lang=FAKE_LANGUAGE).save(FAKE_AUDIO)
+    playsound(FAKE_AUDIO)
+    os.remove(FAKE_AUDIO)
+    COMMAND_TIMER = datetime.now()
 
 
 async def throw(cmd: ChatCommand):
-    global chat, mods, COMAND_TIMER
-    if not (
-        COMAND_TIMER + relativedelta.relativedelta(seconds=COMAND_COOLDOWN)
-        < datetime.now()
-    ):
+    global chat, mods, COMMAND_TIMER
+    if cooldown():
         return
     chatter = None
     chatters = await chat.twitch.get_chatters(STREAMER_ID, MODERATOR_ID)
@@ -99,21 +104,18 @@ async def throw(cmd: ChatCommand):
         await chat.twitch.ban_user(
             STREAMER_ID, MODERATOR_ID, cmd.user.id, "Сломал спину", 30
         )
-    COMAND_TIMER = datetime.now()
+    COMMAND_TIMER = datetime.now()
 
 
 async def poke(cmd: ChatCommand):
-    global chat, COMAND_TIMER
-    if not (
-        COMAND_TIMER + relativedelta.relativedelta(seconds=COMAND_COOLDOWN)
-        < datetime.now()
-    ):
+    global chat, COMMAND_TIMER
+    if cooldown():
         return
     chatters = await chat.twitch.get_chatters(STREAMER_ID, MODERATOR_ID)
     chatters = [i.user_login for i in chatters.data]
     random_chatters = random.choice(chatters)
     await cmd.send(f"Пошел нахуй, @{random_chatters}")
-    COMAND_TIMER = datetime.now()
+    COMMAND_TIMER = datetime.now()
 
 
 # this is where we set up the bot
@@ -147,6 +149,7 @@ async def run():
     chat.register_command("fake", fake_audio)
     chat.register_command("прогиб", throw)
     chat.register_command("тык", poke)
+    chat.register_command("команды", commands)
 
     # we are done with our setup, lets start this bot up!
     chat.start()
