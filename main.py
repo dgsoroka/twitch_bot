@@ -68,12 +68,17 @@ async def fake_audio(cmd: ChatCommand):
 
 
 async def throw(cmd: ChatCommand):
-    global chat
+    global chat, COMAND_TIMER
+    if not (
+        COMAND_TIMER + relativedelta.relativedelta(seconds=COMAND_COOLDOWN)
+        < datetime.now()
+    ):
+        return
     chatter = None
     chatters = await chat.twitch.get_chatters(STREAMER_ID, MODERATOR_ID)
     chatters = [i for i in chatters.data]
     for i in chatters:
-        if i.user_login == cmd.parameter[1:]:
+        if i.user_login.lower() == cmd.parameter[1:].lower():
             chatter = i
     if not chatter:
         print("Юзера нет в чате")
@@ -92,6 +97,19 @@ async def throw(cmd: ChatCommand):
         )
 
 
+async def poke(cmd: ChatCommand):
+    global chat, COMAND_TIMER
+    if not (
+        COMAND_TIMER + relativedelta.relativedelta(seconds=COMAND_COOLDOWN)
+        < datetime.now()
+    ):
+        return
+    chatters = await chat.twitch.get_chatters(STREAMER_ID, MODERATOR_ID)
+    chatters = [i.user_login for i in chatters.data]
+    random_chatters = random.choice(chatters)
+    cmd.send(f"Пошел нахуй, @{random_chatters}")
+
+
 # this is where we set up the bot
 async def run():
     # set up twitch api instance and add user authentication with some scopes
@@ -103,6 +121,7 @@ async def run():
     # create chat instance
     global chat
     chat = await Chat(twitch)
+
     # register the handlers for the events you want
 
     # listen to when the bot is done starting up and ready to join channels
@@ -118,6 +137,7 @@ async def run():
     chat.register_command("audio", test_audio_command)
     chat.register_command("fake", fake_audio)
     chat.register_command("прогиб", throw)
+    chat.register_command("тык", poke)
 
     # we are done with our setup, lets start this bot up!
     chat.start()
