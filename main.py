@@ -15,7 +15,7 @@ from utils import cooldown
 
 async def commands(cmd: ChatCommand):
     global COMMAND_TIMER
-    if cooldown():
+    if await cooldown():
         return
     if LIST_COMMANDS:
         message = 'На канале есть чат-бот, команды:\n'
