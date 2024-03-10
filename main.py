@@ -68,7 +68,7 @@ async def fake_audio(cmd: ChatCommand):
 
 
 async def throw(cmd: ChatCommand):
-    global chat, COMAND_TIMER
+    global chat, mods, COMAND_TIMER
     if not (
         COMAND_TIMER + relativedelta.relativedelta(seconds=COMAND_COOLDOWN)
         < datetime.now()
@@ -85,6 +85,8 @@ async def throw(cmd: ChatCommand):
         return
     if random.randint(1, 10) >= 5:
         await cmd.reply(f"@{cmd.user.name} швырнул на прогиб @{chatter.user_login}")
+        if chatter.user_name in mods:
+            return
         await chat.twitch.ban_user(
             STREAMER_ID, MODERATOR_ID, chatter.user_id, "Кинут на прогиб", 30
         )
@@ -92,6 +94,8 @@ async def throw(cmd: ChatCommand):
         await cmd.reply(
             f"@{cmd.user.name} не смог поднять тушу @{chatter.user_login} и сломал себе спину"
         )
+        if cmd.user.mod:
+            return
         await chat.twitch.ban_user(
             STREAMER_ID, MODERATOR_ID, cmd.user.id, "Сломал спину", 30
         )
@@ -121,9 +125,12 @@ async def run():
     await twitch.set_user_authentication(token, USER_SCOPE, refresh_token)
 
     # create chat instance
-    global chat
+    global chat, mods
     chat = await Chat(twitch)
-
+    mods = chat.twitch.get_moderators(MODERATOR_ID)
+    mods = [i.user_name async for i in mods]
+    print(f'Список модераторов {mods}')
+        
     # register the handlers for the events you want
 
     # listen to when the bot is done starting up and ready to join channels
