@@ -22,7 +22,7 @@ async def commands(cmd: ChatCommand):
         for command in LIST_COMMANDS:
             message += command
             message += '\n'
-        cmd.reply(message)
+        await cmd.reply(message)
     
 # this will be called when the event READY is triggered, which will be on bot start
 async def on_ready(ready_event: EventData):
